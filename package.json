@@ -1,0 +1,37 @@
+{
+  "name": "aave-triggerx-automation",
+  "version": "1.0.0",
+  "main": "dist/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "ts-node src/main.ts",
+    "deploy": "ts-node scripts/deploy-job.ts",
+    "test-health": "ts-node scripts/test-health-factor.ts",
+    "deploy-ngrok": "ts-node scripts/deploy-ngrok-job.ts",
+    "build": "tsc",
+    "dev": "ts-node --watch src/main.ts",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "aave",
+    "triggerx",
+    "defi",
+    "automation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "Auto collateral top-up system using TriggerX SDK and Aave V3",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "ethers": "^6.15.0",
+    "express": "^5.1.0",
+    "sdk-triggerx": "^0.1.19"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.7.0",
+    "hardhat": "^3.0.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
