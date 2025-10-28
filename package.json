@@ -8,6 +8,7 @@
     "deploy": "ts-node scripts/deploy-job.ts",
     "test-health": "ts-node scripts/test-health-factor.ts",
     "deploy-ngrok": "ts-node scripts/deploy-ngrok-job.ts",
+    "create-safe": "ts-node scripts/create-safe-wallet.ts",
     "build": "tsc",
     "dev": "ts-node --watch src/main.ts",
     "clean": "rm -rf dist"
