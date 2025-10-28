@@ -1,4 +1,5 @@
-import { TriggerXClient, createJob, JobType, ArgType, createSafeWallet } from 'sdk-triggerx';
+import { TriggerXClient, createJob, JobType, ArgType } from 'sdk-triggerx';
+import { createSafeWallet } from 'sdk-triggerx/dist/api/safeWallet.js';
 import { ethers } from 'ethers';
 import { config } from '../utils/config';
 import { AAVE_POOL_ABI, WETH_ADDRESS } from '../contracts/abis';
@@ -21,7 +22,7 @@ export class TriggerXService {
     }
   
     try {
-      console.log('Creating Safe wallet...');
+      console.log('Creating Safe wallet...',this.signer);
       this.safeAddress = await createSafeWallet(this.signer);
       console.log('Safe wallet created successfully:', this.safeAddress);
       return this.safeAddress!; // Add non-null assertion here

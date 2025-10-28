@@ -15,14 +15,17 @@ export class HealthMonitorService {
   private setupRoutes() {
     // TriggerX compatible endpoint - returns plain number
     this.app.get('/health-factor/:address', async (req, res) => {
+      const startedAt = Date.now();
       try {
         const { address } = req.params;
         const healthFactor = await this.aaveService.getHealthFactor(address);
-        
-        // Return just the number for TriggerX
+        const latency = Date.now() - startedAt;
+        console.log(`[HF] ${address} -> ${healthFactor} (${latency}ms)`);
         res.setHeader('Content-Type', 'text/plain');
         res.send(healthFactor.toString());
-      } catch (error) {
+      } catch (error: any) {
+        const latency = Date.now() - startedAt;
+        console.error('[HF] error:', { code: error?.code, message: error?.message, latency });
         res.status(500).send('0');
       }
     });

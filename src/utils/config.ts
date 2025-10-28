@@ -17,3 +17,6 @@ export const config = {
   topUpAmount: '10000000000000000', // 0.01 ETH in wei
   jobDuration: 300, // 5 minutes
 };
+
+// Optionally expose numeric chainId for libraries that require a number
+export const chainIdNumber: number | undefined = process.env.CHAIN_ID ? Number(process.env.CHAIN_ID) : undefined;
