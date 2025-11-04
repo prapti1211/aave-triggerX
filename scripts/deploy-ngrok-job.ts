@@ -12,26 +12,23 @@ async function deployNgrokJob() {
 
     console.log(`Using ngrok URL: ${ngrokUrl}`);
 
-    const client = new TriggerXClient(config.triggerxApiKey);
+    const client = new TriggerXClient(config.triggerxApiKey, {
+        timeout: 90000 // 90 seconds for slow IPFS fetches
+      });
     const provider = new ethers.JsonRpcProvider(config.rpcUrl);
     const signer = new ethers.Wallet(config.privateKey, provider);
 
     try {
-        // Step 1: Create or get Safe wallet address
-        // console.log('🔐 Creating Safe wallet...');
-        // const safeAddress = await createSafeWallet(signer);
-        // console.log('✅ Safe wallet created:', safeAddress);
-
-        // Step 2: Create job input with safeAddress
+    // Create job input with safeAddress
         const jobInput = {
             jobType: JobType.Condition,
             argType: ArgType.Dynamic,
             jobTitle: 'Auto Supply to Aave',
-            timeFrame: 300,
+            timeFrame: 90,
             recurring: false,
             conditionType: 'less_equal' as const,
             upperLimit: 10,
-            lowerLimit: 1.2,
+            lowerLimit: 1.05,
             valueSourceType: 'api' as const,
             valueSourceUrl: `${ngrokUrl}/health-factor/${config.userAddress}`,
             timezone: 'UTC',
@@ -39,8 +36,8 @@ async function deployNgrokJob() {
             
             // ✅ REQUIRED: Add Safe wallet configuration
             walletMode: 'safe' as const,
-            safeAddress: "0x51Bc63440F1E774BC6df032f7315E4075175Ea88",
-            dynamicArgumentsScriptUrl: 'https://teal-random-koala-993.mypinata.cloud/ipfs/bafkreigi6zwdpexj2rz6itwrqdilhjd4vfuudmhftlcdhr7w6o2gfotgem',
+            safeAddress: "0xC9C19C9d84Bf5f6AF1047DE5a0B5cb2aBf90D5F2",
+            dynamicArgumentsScriptUrl: 'https://teal-random-koala-993.mypinata.cloud/ipfs/bafkreidgobokf2nkg6lj34httfajpuvbuts3ai6t264bdmuig6aodd2bzi',
             autotopupTG: true,
         };
 
