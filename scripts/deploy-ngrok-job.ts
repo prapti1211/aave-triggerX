@@ -32,10 +32,10 @@ async function deployNgrokJob() {
         // Create job input with safeAddress
         const jobInput = {
             jobType: JobType.Condition,
-            argType: ArgType.Dynamic,
+            argType: ArgType.Static, // Use Static for fixed WETH amount
             jobTitle: 'Auto Supply to Aave',
             timeFrame: 90,
-            recurring: false,
+            recurring: true, // Changed to true for continuous monitoring
             conditionType: 'less_equal' as const,
             upperLimit: 10,
             lowerLimit: config.healthFactorThreshold,
@@ -44,11 +44,37 @@ async function deployNgrokJob() {
             timezone: 'UTC',
             chainId: config.chainId,
             
+            // Target contract and function
+            targetContractAddress: config.aave.poolAddress,
+            targetFunction: 'supply',
+            abi: JSON.stringify([
+                {
+                    "inputs": [
+                        { "internalType": "address", "name": "asset", "type": "address" },
+                        { "internalType": "uint256", "name": "amount", "type": "uint256" },
+                        { "internalType": "address", "name": "onBehalfOf", "type": "address" },
+                        { "internalType": "uint16", "name": "referralCode", "type": "uint16" }
+                    ],
+                    "name": "supply",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ]),
+            
+            // Static arguments for supply function
+            arguments: [
+                '0x4200000000000000000000000000000000000006', // WETH address on OP Sepolia
+                config.topUpAmount, // Amount to supply
+                config.userAddress, // On behalf of user
+                '0' // Referral code
+            ],
+            
             // REQUIRED: Add Safe wallet configuration from env
             walletMode: 'safe' as const,
             safeAddress: config.safeWalletAddress,
-            dynamicArgumentsScriptUrl: 'https://teal-random-koala-993.mypinata.cloud/ipfs/bafkreidgobokf2nkg6lj34httfajpuvbuts3ai6t264bdmuig6aodd2bzi',
             autotopupTG: true,
+            language: 'go',
         };
 
         // Step 2.5: Check provider/network reachability before job creation
