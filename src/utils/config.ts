@@ -7,13 +7,14 @@ export const config = {
   rpcUrl: process.env.SEPOLIA_RPC_URL!,
   chainId: process.env.CHAIN_ID!,
   userAddress: process.env.USER_ADDRESS!,
+  safeWalletAddress: process.env.SAFE_WALLET_ADDRESS, // Optional: Pre-existing Safe wallet
   
   aave: {
     poolAddress: process.env.AAVE_POOL_ADDRESS!,
     dataProvider: process.env.AAVE_POOL_DATA_PROVIDER!,
   },
   
-  healthFactorThreshold: 1.2,
+  healthFactorThreshold: 1.2, // Trigger when health factor drops below 1.2
   topUpAmount: '10000000000000000', // 0.01 ETH in wei
   jobDuration: 300, // 5 minutes
 };

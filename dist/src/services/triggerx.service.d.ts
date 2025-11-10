@@ -1,8 +1,10 @@
 export declare class TriggerXService {
     private client;
     private signer;
+    private safeAddress;
     constructor();
-    createAutoTopUpJob(userAddress: string): Promise<import("sdk-triggerx").JobResponse>;
-    createTestJob(): Promise<import("sdk-triggerx").JobResponse>;
+    initializeSafeWallet(): Promise<string>;
+    createAutoTopUpJob(userAddress: string, publicApiUrl: string): Promise<import("sdk-triggerx").JobResponse>;
+    getSafeAddress(): string | null;
 }
 //# sourceMappingURL=triggerx.service.d.ts.map

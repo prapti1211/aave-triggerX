@@ -33,8 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.config = void 0;
-// src/utils/config.ts
+exports.chainIdNumber = exports.config = void 0;
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 exports.config = {
@@ -43,14 +42,15 @@ exports.config = {
     rpcUrl: process.env.SEPOLIA_RPC_URL,
     chainId: process.env.CHAIN_ID,
     userAddress: process.env.USER_ADDRESS,
-    // Aave V3 Sepolia Testnet Addresses
+    safeWalletAddress: process.env.SAFE_WALLET_ADDRESS, // Optional: Pre-existing Safe wallet
     aave: {
         poolAddress: process.env.AAVE_POOL_ADDRESS,
         dataProvider: process.env.AAVE_POOL_DATA_PROVIDER,
     },
-    // Automation settings
-    healthFactorThreshold: 1.2, // 120%
+    healthFactorThreshold: 1.2, // Trigger when health factor drops below 1.2
     topUpAmount: '10000000000000000', // 0.01 ETH in wei
     jobDuration: 300, // 5 minutes
 };
+// Optionally expose numeric chainId for libraries that require a number
+exports.chainIdNumber = process.env.CHAIN_ID ? Number(process.env.CHAIN_ID) : undefined;
 //# sourceMappingURL=config.js.map

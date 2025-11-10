@@ -1,31 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// scripts/deploy-job.ts
-const triggerx_service_1 = require("../src/services/triggerx.service");
 const health_monitor_service_1 = require("../src/services/health-monitor.service");
+const aave_service_1 = require("../src/services/aave.service");
 const config_1 = require("../src/utils/config");
-async function deployAutomation() {
-    console.log('🚀 Deploying Aave Auto Top-Up Automation');
-    // Start health monitor
+async function main() {
+    console.log('Starting Aave TriggerX Auto Top-Up System');
+    console.log(`Monitoring address: ${config_1.config.userAddress}`);
+    console.log(`Health factor threshold: ${config_1.config.healthFactorThreshold}`);
+    // Initialize services
+    const aaveService = new aave_service_1.AaveService();
     const healthMonitor = new health_monitor_service_1.HealthMonitorService();
+    // Start health monitoring API
     healthMonitor.start(3000);
-    // Wait for API to be ready
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    // Deploy TriggerX job
-    const triggerxService = new triggerx_service_1.TriggerXService();
-    try {
-        console.log('Creating automation job...');
-        const result = await triggerxService.createAutoTopUpJob(config_1.config.userAddress);
-        console.log('✅ Deployment successful!');
-        console.log('Job Details:', result);
-        console.log('\n📋 Next Steps:');
-        console.log('1. Monitor your position at: http://localhost:3000/account-data/' + config_1.config.userAddress);
-        console.log('2. Test health factor API: http://localhost:3000/health-factor/' + config_1.config.userAddress);
-        console.log('3. Visit TriggerX dashboard: https://app.triggerx.network');
-    }
-    catch (error) {
-        console.error('❌ Deployment failed:', error);
-    }
+    // Test Aave connection
+    console.log('\nTesting Aave connection...');
+    const accountData = await aaveService.getUserAccountDetails(config_1.config.userAddress);
+    console.log('Account Data:', accountData);
+    console.log('\nSystem is now running and monitoring your position!');
+    console.log('Health factor API: http://localhost:3000/health-factor/' + config_1.config.userAddress);
+    console.log('\nNext steps:');
+    console.log('1. Run ngrok in another terminal: ngrok http 3000');
+    console.log('2. Copy the ngrok URL and update scripts/deploy-ngrok-job.ts');
+    console.log('3. Run: npm run deploy-ngrok');
 }
-deployAutomation().catch(console.error);
+main().catch(console.error);
 //# sourceMappingURL=deploy-job.js.map

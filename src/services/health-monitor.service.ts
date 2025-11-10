@@ -56,13 +56,78 @@ export class HealthMonitorService {
         res.status(500).json({ error: 'Failed to fetch account data' });
       }
     });
+
+    // Post-execution verification endpoint
+    this.app.post('/verify-execution/:address', async (req, res) => {
+      try {
+        const { address } = req.params;
+        const startTime = Date.now();
+        
+        console.log('\n[VERIFICATION] Job execution detected, checking health factor...');
+        
+        // Wait a bit for the transaction to be confirmed
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        const healthFactor = await this.aaveService.getHealthFactor(address);
+        const accountData = await this.aaveService.getUserAccountDetails(address);
+        const latency = Date.now() - startTime;
+        
+        const result = {
+          timestamp: new Date().toISOString(),
+          address,
+          healthFactor,
+          accountData,
+          safe: healthFactor > config.healthFactorThreshold,
+          latencyMs: latency
+        };
+        
+        console.log('\n[VERIFICATION] Post-execution health check:');
+        console.log('──────────────────────────────────────────────────────');
+        console.log('Time:', result.timestamp);
+        console.log('Health Factor:', healthFactor);
+        console.log('Total Collateral:', accountData.totalCollateral, 'ETH');
+        console.log('Total Debt:', accountData.totalDebt, 'ETH');
+        console.log('Status:', result.safe ? 'SAFE' : 'STILL AT RISK');
+        console.log('──────────────────────────────────────────────────────\n');
+        
+        res.json(result);
+      } catch (error: any) {
+        console.error('[VERIFICATION] Error:', error.message);
+        res.status(500).json({ error: 'Failed to verify execution' });
+      }
+    });
+
+    // Get endpoint version for verification (can be called via GET)
+    this.app.get('/verify-execution/:address', async (req, res) => {
+      try {
+        const { address } = req.params;
+        const healthFactor = await this.aaveService.getHealthFactor(address);
+        const accountData = await this.aaveService.getUserAccountDetails(address);
+        
+        const result = {
+          timestamp: new Date().toISOString(),
+          address,
+          healthFactor,
+          accountData,
+          safe: healthFactor > config.healthFactorThreshold
+        };
+        
+        console.log('[VERIFICATION] Manual health check for:', address);
+        console.log('Health Factor:', healthFactor, '| Safe:', result.safe);
+        
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to verify execution' });
+      }
+    });
   }
 
   start(port: number = 3000) {
     this.app.listen(port, () => {
-      console.log(`🚀 Health monitor API running on port ${port}`);
-      console.log(`📡 TriggerX endpoint: http://localhost:${port}/health-factor/${config.userAddress}`);
-      console.log(`🐛 Debug endpoint: http://localhost:${port}/debug-health/${config.userAddress}`);
+      console.log(`Health monitor API running on port ${port}`);
+      console.log(`TriggerX endpoint: http://localhost:${port}/health-factor/${config.userAddress}`);
+      console.log(`Debug endpoint: http://localhost:${port}/debug-health/${config.userAddress}`);
+      console.log(`Verification endpoint: http://localhost:${port}/verify-execution/${config.userAddress}`);
     });
   }
 }

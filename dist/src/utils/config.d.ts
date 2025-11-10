@@ -4,6 +4,7 @@ export declare const config: {
     rpcUrl: string;
     chainId: string;
     userAddress: string;
+    safeWalletAddress: string | undefined;
     aave: {
         poolAddress: string;
         dataProvider: string;
@@ -12,4 +13,5 @@ export declare const config: {
     topUpAmount: string;
     jobDuration: number;
 };
+export declare const chainIdNumber: number | undefined;
 //# sourceMappingURL=config.d.ts.map

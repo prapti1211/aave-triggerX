@@ -1,11 +1,12 @@
 import { ethers } from 'ethers';
-import { AAVE_POOL_ABI, WETH_ADDRESS } from '../contracts/abis';
+import { AAVE_POOL_ABI, WETH_ADDRESS, ERC20_ABI } from '../contracts/abis';
 import { config } from '../utils/config';
 
 export class AaveService {
   private provider: ethers.JsonRpcProvider;
   private wallet: ethers.Wallet;
   private poolContract: ethers.Contract;
+  private wethContract: ethers.Contract;
 
   constructor() {
     this.provider = new ethers.JsonRpcProvider(config.rpcUrl);
@@ -13,6 +14,11 @@ export class AaveService {
     this.poolContract = new ethers.Contract(
       config.aave.poolAddress,
       AAVE_POOL_ABI,
+      this.wallet
+    );
+    this.wethContract = new ethers.Contract(
+      WETH_ADDRESS,
+      ERC20_ABI,
       this.wallet
     );
   }
@@ -63,6 +69,55 @@ export class AaveService {
       return tx.hash;
     } catch (error) {
       console.error('Error supplying collateral:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check WETH balance of a given address (e.g., Safe wallet)
+   */
+  async getWethBalance(address: string): Promise<string> {
+    try {
+      const balance = await this.wethContract.balanceOf(address);
+      return ethers.formatEther(balance);
+    } catch (error) {
+      console.error('Error fetching WETH balance:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check WETH allowance for Aave Pool from a given address
+   */
+  async getWethAllowance(ownerAddress: string): Promise<string> {
+    try {
+      const allowance = await this.wethContract.allowance(
+        ownerAddress,
+        config.aave.poolAddress
+      );
+      return ethers.formatEther(allowance);
+    } catch (error) {
+      console.error('Error fetching WETH allowance:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Approve WETH spending for Aave Pool
+   * Note: This should be called from the wallet that will supply WETH
+   */
+  async approveWeth(amount: string): Promise<string> {
+    try {
+      const tx = await this.wethContract.approve(
+        config.aave.poolAddress,
+        amount
+      );
+      
+      await tx.wait();
+      console.log(`WETH approved for Aave Pool: ${tx.hash}`);
+      return tx.hash;
+    } catch (error) {
+      console.error('Error approving WETH:', error);
       throw error;
     }
   }
