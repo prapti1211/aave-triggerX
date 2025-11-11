@@ -12,6 +12,8 @@
     "prepare-safe": "ts-node scripts/prepare-safe-wallet.ts",
     "verify-execution": "ts-node scripts/verify-post-execution.ts",
     "diagnose": "ts-node scripts/diagnose-issue.ts",
+    "manipulate-hf": "ts-node scripts/manipulate-health-factor.ts",
+    "check-jobs": "ts-node scripts/check-job-status.ts",
     "build": "tsc",
     "dev": "ts-node --watch src/main.ts",
     "clean": "rm -rf dist"
@@ -29,7 +31,7 @@
     "dotenv": "^17.2.3",
     "ethers": "^6.15.0",
     "express": "^5.1.0",
-    "sdk-triggerx": "^0.1.26"
+    "sdk-triggerx": "^0.1.27"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

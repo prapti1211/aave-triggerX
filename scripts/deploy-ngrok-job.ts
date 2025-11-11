@@ -34,8 +34,8 @@ async function deployNgrokJob() {
             jobType: JobType.Condition,
             argType: ArgType.Static, // Use Static for fixed WETH amount
             jobTitle: 'Auto Supply to Aave',
-            timeFrame: 90,
-            recurring: true, // Changed to true for continuous monitoring
+            timeFrame: 300, // 1 hour (3600 seconds) - increase for longer monitoring
+            recurring: false, // Changed to false for one-time job
             conditionType: 'less_equal' as const,
             upperLimit: 10,
             lowerLimit: config.healthFactorThreshold,
@@ -62,17 +62,38 @@ async function deployNgrokJob() {
                 }
             ]),
             
-            // Static arguments for supply function
-            arguments: [
-                '0x4200000000000000000000000000000000000006', // WETH address on OP Sepolia
-                config.topUpAmount, // Amount to supply
-                config.userAddress, // On behalf of user
-                '0' // Referral code
-            ],
-            
             // REQUIRED: Add Safe wallet configuration from env
             walletMode: 'safe' as const,
             safeAddress: config.safeWalletAddress,
+            
+            // For static Safe wallet jobs, use safeTransactions instead of arguments
+            safeTransactions: [
+                {
+                    to: config.aave.poolAddress,
+                    value: '0', // No ETH being sent
+                    data: new ethers.Interface([
+                        {
+                            "inputs": [
+                                { "internalType": "address", "name": "asset", "type": "address" },
+                                { "internalType": "uint256", "name": "amount", "type": "uint256" },
+                                { "internalType": "address", "name": "onBehalfOf", "type": "address" },
+                                { "internalType": "uint16", "name": "referralCode", "type": "uint16" }
+                            ],
+                            "name": "supply",
+                            "outputs": [],
+                            "stateMutability": "nonpayable",
+                            "type": "function"
+                        }
+                    ]).encodeFunctionData('supply', [
+                        '0x4200000000000000000000000000000000000006', // WETH address on OP Sepolia
+                        config.topUpAmount, // Amount to supply
+                        config.userAddress, // On behalf of user
+                        0 // Referral code
+                    ]),
+                    operation: 0 // 0 = CALL, 1 = DELEGATECALL
+                }
+            ],
+            
             autotopupTG: true,
             language: 'go',
         };
