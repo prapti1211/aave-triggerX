@@ -68,6 +68,28 @@ async function deployNgrokJob() {
             
             // For static Safe wallet jobs, use safeTransactions instead of arguments
             safeTransactions: [
+                // TRANSACTION 1: Approve WETH for Aave Pool
+                {
+                    to: WETH_ADDRESS, // WETH contract address
+                    value: '0',
+                    data: new ethers.Interface([
+                        {
+                            "inputs": [
+                                { "internalType": "address", "name": "spender", "type": "address" },
+                                { "internalType": "uint256", "name": "amount", "type": "uint256" }
+                            ],
+                            "name": "approve",
+                            "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+                            "stateMutability": "nonpayable",
+                            "type": "function"
+                        }
+                    ]).encodeFunctionData('approve', [
+                        config.aave.poolAddress, // Aave Pool as spender
+                        ethers.MaxUint256 // Approve maximum amount to avoid repeated approvals
+                    ]),
+                    operation: 0 // 0 = CALL
+                },
+                // TRANSACTION 2: Supply WETH to Aave Pool
                 {
                     to: config.aave.poolAddress,
                     value: '0', // No ETH being sent
@@ -85,7 +107,7 @@ async function deployNgrokJob() {
                             "type": "function"
                         }
                     ]).encodeFunctionData('supply', [
-                        '0x4200000000000000000000000000000000000006', // WETH address on OP Sepolia
+                        WETH_ADDRESS, // WETH address on OP Sepolia
                         config.topUpAmount, // Amount to supply
                         config.userAddress, // On behalf of user
                         0 // Referral code

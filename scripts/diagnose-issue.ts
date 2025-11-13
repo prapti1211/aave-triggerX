@@ -134,8 +134,46 @@ async function diagnose() {
     }
   }
 
-  // 5. Check API Endpoint
-  console.log('\n5️⃣  CHECKING API ENDPOINT');
+  // 5. Check WETH Approval for Aave Pool
+  console.log('\n5️⃣  CHECKING WETH APPROVAL FOR AAVE POOL');
+  console.log('─'.repeat(70));
+  
+  if (!config.safeWalletAddress) {
+    console.log('✗ Cannot check WETH approval - Safe wallet address not set');
+    issuesFound++;
+  } else {
+    try {
+      const allowance = await wethContract.allowance(
+        config.safeWalletAddress,
+        config.aave.poolAddress
+      );
+      const allowanceFormatted = ethers.formatEther(allowance);
+      const requiredWeth = ethers.formatEther(config.topUpAmount);
+      
+      console.log(`WETH Allowance: ${allowanceFormatted} WETH`);
+      console.log(`Required per top-up: ${requiredWeth} WETH`);
+      
+      if (allowance >= BigInt(config.topUpAmount)) {
+        console.log('✓ Safe wallet has sufficient WETH approval for Aave Pool');
+      } else if (allowance === 0n) {
+        console.log('✗ CRITICAL: Safe wallet has NO WETH approval for Aave Pool!');
+        console.log('  The transaction will REVERT without approval.');
+        console.log('  Run: npm run approve-weth');
+        issuesFound++;
+      } else {
+        console.log('✗ WARNING: Safe wallet has insufficient WETH approval!');
+        console.log(`  Has: ${allowanceFormatted} WETH, Needs: ${requiredWeth} WETH`);
+        console.log('  Run: npm run approve-weth');
+        issuesFound++;
+      }
+    } catch (error: any) {
+      console.log('✗ FAILED to check WETH allowance:', error.message);
+      issuesFound++;
+    }
+  }
+
+  // 6. Check API Endpoint
+  console.log('\n6️⃣  CHECKING API ENDPOINT');
   console.log('─'.repeat(70));
   
   try {
@@ -175,8 +213,8 @@ async function diagnose() {
     issuesFound++;
   }
 
-  // 6. Check Account Details
-  console.log('\n6️⃣  CHECKING AAVE ACCOUNT DETAILS');
+  // 7. Check Account Details
+  console.log('\n7️⃣  CHECKING AAVE ACCOUNT DETAILS');
   console.log('─'.repeat(70));
   
   try {
@@ -190,8 +228,8 @@ async function diagnose() {
     issuesFound++;
   }
 
-  // 7. Job Configuration Info
-  console.log('\n7️⃣  JOB CONFIGURATION');
+  // 8. Job Configuration Info
+  console.log('\n8️⃣  JOB CONFIGURATION');
   console.log('─'.repeat(70));
   console.log(`Job Type: Condition-based`);
   console.log(`Condition: Health Factor <= ${config.healthFactorThreshold}`);

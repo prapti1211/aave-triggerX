@@ -14,6 +14,7 @@
     "diagnose": "ts-node scripts/diagnose-issue.ts",
     "manipulate-hf": "ts-node scripts/manipulate-health-factor.ts",
     "check-jobs": "ts-node scripts/check-job-status.ts",
+    "approve-weth": "ts-node scripts/approve-weth-for-aave.ts",
     "build": "tsc",
     "dev": "ts-node --watch src/main.ts",
     "clean": "rm -rf dist"
