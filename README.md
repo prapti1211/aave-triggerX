@@ -115,7 +115,7 @@ Your automation is now active!
 
 ### Using Different Blockchains
 
-To use this system on different chains (e.g., Ethereum Mainnet, Polygon, Arbitrum):
+To use this system on different chains (e.g., Ethereum Mainnet, Arbitrum):
 
 #### 1. Update `.env` Configuration
 
@@ -124,9 +124,6 @@ To use this system on different chains (e.g., Ethereum Mainnet, Polygon, Arbitru
 SEPOLIA_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/your-api-key
 CHAIN_ID=1
 
-# Example: Polygon
-SEPOLIA_RPC_URL=https://polygon-mainnet.g.alchemy.com/v2/your-api-key
-CHAIN_ID=137
 
 # Example: Arbitrum
 SEPOLIA_RPC_URL=https://arb-mainnet.g.alchemy.com/v2/your-api-key
@@ -153,7 +150,7 @@ export const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'; // ETH
 
 // Common WETH addresses:
 // Ethereum: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
-// Polygon: 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619
+// : 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619
 // Arbitrum: 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1
 // Optimism: 0x4200000000000000000000000000000000000006
 ```
