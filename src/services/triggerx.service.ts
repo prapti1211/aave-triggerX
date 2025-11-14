@@ -17,24 +17,20 @@ export class TriggerXService {
 
   async initializeSafeWallet(): Promise<string> {
     if (this.safeAddress) {
-      console.log('Safe wallet already initialized:', this.safeAddress);
       return this.safeAddress;
     }
   
     // Check if Safe wallet address is provided in config
     if (config.safeWalletAddress) {
-      console.log('Using Safe wallet from config:', config.safeWalletAddress);
       this.safeAddress = config.safeWalletAddress;
       return this.safeAddress;
     }
   
     // If no Safe wallet in config, create a new one
     try {
-      console.log('No Safe wallet in config. Creating new Safe wallet...');
       this.safeAddress = await createSafeWallet(this.signer);
-      console.log('Safe wallet created successfully:', this.safeAddress);
-      console.log('[IMPORTANT] Add this to your .env file:');
-      console.log(`SAFE_WALLET_ADDRESS=${this.safeAddress}`);
+      console.log('Safe wallet created:', this.safeAddress);
+      console.log('Add to .env: SAFE_WALLET_ADDRESS=' + this.safeAddress);
       return this.safeAddress!;
     } catch (error: unknown) {
       console.error('Error creating Safe wallet:', error);
@@ -81,7 +77,6 @@ export class TriggerXService {
 
     try {
       const result = await createJob(this.client, { jobInput, signer: this.signer });
-      console.log('Auto top-up job created:', result);
       return result;
     } catch (error: unknown) {
       console.error('Error creating job:', error);

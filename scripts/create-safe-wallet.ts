@@ -3,31 +3,25 @@ import { config } from '../src/utils/config';
 
 async function main() {
   console.log('Creating Safe Wallet...');
-  console.log(`Network: ${config.rpcUrl}`);
   
-  // Initialize the triggerx service
   const triggerxService = new TriggerXService();
   
   try {
-    // Create Safe wallet
     const safeAddress = await triggerxService.initializeSafeWallet();
-    
-    console.log('\nSafe wallet created successfully!');
-    console.log(`Safe Address: ${safeAddress}`);
-    console.log('\nYou can save this address and use it later when deploying the automation job.');
-    console.log('   This Safe wallet will be used to execute your automation jobs securely.');
+    console.log('Safe Address:', safeAddress);
+    console.log('Save this address to your .env file');
     
   } catch (error: unknown) {
     console.error('Failed to create Safe wallet:', error);
     if (error instanceof Error) {
-      console.error('Error details:', error.message);
+      console.error(error.message);
     }
     process.exit(1);
   }
 }
 
 main().catch((error) => {
-  console.error('Fatal error:', error);
+  console.error('Error:', error);
   process.exit(1);
 });
 

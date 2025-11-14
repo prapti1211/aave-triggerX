@@ -5,12 +5,10 @@ import { config } from '../src/utils/config';
 import { AAVE_POOL_ABI, WETH_ADDRESS } from '../src/contracts/abis';
 
 async function deployNgrokJob() {
-    console.log('Deploying TriggerX job with ngrok public URL...');
+    console.log('Deploying TriggerX job...');
 
-    // Use env if provided to avoid hardcoding changing tunnels
     const ngrokUrl = (process.env.PUBLIC_URL || 'https://unrecognized-conjunctionally-madelyn.ngrok-free.dev').trim();
-
-    console.log(`Using ngrok URL: ${ngrokUrl}`);
+    console.log('ngrok URL:', ngrokUrl);
 
     const client = new TriggerXClient(config.triggerxApiKey, {
         timeout: 90000 // 90 seconds for slow IPFS fetches
@@ -19,15 +17,13 @@ async function deployNgrokJob() {
     const signer = new ethers.Wallet(config.privateKey, provider);
 
     try {
-    // Validate Safe wallet address
-        if (!config.safeWalletAddress) {
-            console.error('[ERROR] SAFE_WALLET_ADDRESS not found in .env file!');
-            console.log('\nPlease add your Safe wallet address to .env:');
-            console.log('SAFE_WALLET_ADDRESS=0xYourSafeWalletAddressHere');
+    if (!config.safeWalletAddress) {
+            console.error('SAFE_WALLET_ADDRESS not found in .env');
+            console.log('Add to .env: SAFE_WALLET_ADDRESS=0xYourAddress');
             process.exit(1);
         }
 
-        console.log('Using Safe wallet:', config.safeWalletAddress);
+        console.log('Safe wallet:', config.safeWalletAddress);
 
         // Create job input with safeAddress
         const jobInput = {
@@ -120,97 +116,52 @@ async function deployNgrokJob() {
             language: 'go',
         };
 
-        // Step 2.5: Check provider/network reachability before job creation
         try {
-            const netStart = Date.now();
             const net = await provider.getNetwork();
-            const netLatency = Date.now() - netStart;
-            console.log('RPC network OK:', { chainId: Number(net.chainId), latencyMs: netLatency });
+            console.log('Network:', Number(net.chainId));
         } catch (netErr: any) {
-            console.error('RPC network check failed - this can cause job creation to fail');
-            console.error('   rpcUrl:', config.rpcUrl);
-            console.error('   code:', netErr?.code);
-            console.error('   message:', netErr?.message);
+            console.error('RPC check failed:', netErr?.message);
         }
 
-        // Step 3: Validate URL
-        console.log('Validating URL...');
-        console.log('Full API URL:', jobInput.valueSourceUrl);
-        
         try {
             new URL(jobInput.valueSourceUrl);
-            console.log('URL format is valid');
         } catch (urlError) {
-            console.error('Invalid URL format:', urlError);
+            console.error('Invalid URL:', urlError);
             return;
         }
 
-        // Step 3.1: Preflight check to the public endpoint
         try {
             const controller = new AbortController();
-            const timeoutMs = 6000;
-            const timeout = setTimeout(() => controller.abort(), timeoutMs);
-            const startedAt = Date.now();
-            console.log('Probing value source URL (timeout', timeoutMs + 'ms' + '):');
+            const timeout = setTimeout(() => controller.abort(), 6000);
             const res = await fetch(jobInput.valueSourceUrl, { method: 'GET', signal: controller.signal });
             clearTimeout(timeout);
-            const latencyMs = Date.now() - startedAt;
-            const text = await res.text().catch(() => '<non-text body>');
-            console.log('   - status:', res.status);
-            console.log('   - latencyMs:', latencyMs);
-            console.log('   - body:', text.slice(0, 200));
+            console.log('API check:', res.status);
         } catch (probeErr: any) {
-            console.error('Preflight to public endpoint failed. This can cause TriggerX to time out.');
-            console.error('   probe.code:', probeErr?.code);
-            console.error('   probe.name:', probeErr?.name);
-            console.error('   probe.message:', probeErr?.message);
-            if (probeErr?.name === 'AbortError') {
-                console.error('   The request exceeded the timeout.');
-            }
+            console.error('API check failed:', probeErr?.message);
         }
 
         const result = await createJob(client, { jobInput, signer });
-        console.log('Fixed ngrok job created successfully!');
-        console.log('Job Result:', result);
-
-        if (!result.success) {
-            console.error('Job creation reported failure. Detailed diagnostics:');
-            try {
-                const details = (result as any).details || {};
-                const originalError = details.originalError || details.error || {};
-                console.error(' error:', (result as any).error);
-                console.error(' errorCode:', (result as any).errorCode);
-                console.error(' httpStatusCode:', (result as any).httpStatusCode);
-                console.error(' errorType:', (result as any).errorType);
-                console.error(' details:', JSON.stringify(details, null, 2));
-                if (originalError) {
-                    console.error(' originalError.code:', originalError.code);
-                    console.error(' originalError.message:', originalError.message);
-                    console.error(' originalError.stack:', originalError.stack);
-                }
-            } catch (logErr) {
-                console.error('Failed to log detailed error info:', logErr);
+        
+        if (result.success) {
+            console.log('Job created successfully');
+            if (result.data?.job_ids) {
+                console.log('Job ID:', result.data.job_ids[0]);
             }
-        }
-
-        if (result.success && result.data?.job_ids) {
-            console.log('- New Job ID:', result.data.job_ids[0]);
+        } else {
+            console.error('Job creation failed');
+            console.error('Error:', (result as any).error);
         }
 
     } catch (error) {
-        console.error('Error creating job (exception thrown):');
-        console.error(error);
+        console.error('Error creating job:', error);
         if (error && typeof error === 'object') {
             const anyErr: any = error;
-            console.error(' code:', anyErr.code);
-            console.error(' message:', anyErr.message);
-            console.error(' stack:', anyErr.stack);
-            if (anyErr.response) {
-                console.error(' response.status:', anyErr.response.status);
-                console.error(' response.data:', anyErr.response.data);
-            }
+            if (anyErr.message) console.error(anyErr.message);
         }
     }
 }
 
-deployNgrokJob().catch(console.error);
+deployNgrokJob().catch((error) => {
+    console.error('Fatal error:', error);
+    process.exit(1);
+});

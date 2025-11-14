@@ -15,17 +15,13 @@ export class HealthMonitorService {
   private setupRoutes() {
     // TriggerX compatible endpoint - returns plain number
     this.app.get('/health-factor/:address', async (req, res) => {
-      const startedAt = Date.now();
       try {
         const { address } = req.params;
         const healthFactor = await this.aaveService.getHealthFactor(address);
-        const latency = Date.now() - startedAt;
-        console.log(`[HF] ${address} -> ${healthFactor} (${latency}ms)`);
         res.setHeader('Content-Type', 'text/plain');
         res.send(healthFactor.toString());
       } catch (error: any) {
-        const latency = Date.now() - startedAt;
-        console.error('[HF] error:', { code: error?.code, message: error?.message, latency });
+        console.error('Error fetching health factor:', error?.message || error);
         res.status(500).send('0');
       }
     });
@@ -61,38 +57,24 @@ export class HealthMonitorService {
     this.app.post('/verify-execution/:address', async (req, res) => {
       try {
         const { address } = req.params;
-        const startTime = Date.now();
         
-        console.log('\n[VERIFICATION] Job execution detected, checking health factor...');
-        
-        // Wait a bit for the transaction to be confirmed
+        // Wait for transaction confirmation
         await new Promise(resolve => setTimeout(resolve, 5000));
         
         const healthFactor = await this.aaveService.getHealthFactor(address);
         const accountData = await this.aaveService.getUserAccountDetails(address);
-        const latency = Date.now() - startTime;
         
         const result = {
           timestamp: new Date().toISOString(),
           address,
           healthFactor,
           accountData,
-          safe: healthFactor > config.healthFactorThreshold,
-          latencyMs: latency
+          safe: healthFactor > config.healthFactorThreshold
         };
-        
-        console.log('\n[VERIFICATION] Post-execution health check:');
-        console.log('──────────────────────────────────────────────────────');
-        console.log('Time:', result.timestamp);
-        console.log('Health Factor:', healthFactor);
-        console.log('Total Collateral:', accountData.totalCollateral, 'ETH');
-        console.log('Total Debt:', accountData.totalDebt, 'ETH');
-        console.log('Status:', result.safe ? 'SAFE' : 'STILL AT RISK');
-        console.log('──────────────────────────────────────────────────────\n');
         
         res.json(result);
       } catch (error: any) {
-        console.error('[VERIFICATION] Error:', error.message);
+        console.error('Verification error:', error.message);
         res.status(500).json({ error: 'Failed to verify execution' });
       }
     });
@@ -111,9 +93,6 @@ export class HealthMonitorService {
           accountData,
           safe: healthFactor > config.healthFactorThreshold
         };
-        
-        console.log('[VERIFICATION] Manual health check for:', address);
-        console.log('Health Factor:', healthFactor, '| Safe:', result.safe);
         
         res.json(result);
       } catch (error) {

@@ -2,7 +2,7 @@
 
 An automated collateral top-up system for Aave V3 positions using TriggerX SDK. This system monitors your Aave health factor and automatically supplies additional collateral when it falls below a specified threshold, protecting your position from liquidation.
 
-## 🎯 Overview
+## Overview
 
 This application:
 - Monitors your Aave V3 position health factor in real-time
@@ -11,7 +11,7 @@ This application:
 - Leverages TriggerX for decentralized automation
 - Exposes a health monitoring API that TriggerX polls
 
-## 📋 Prerequisites
+## Prerequisites
 
 - Node.js (v16 or higher)
 - npm or yarn
@@ -22,7 +22,7 @@ This application:
 - [TriggerX API Key](https://triggerx.network/)
 - [ngrok](https://ngrok.com/) for exposing local API to the internet
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Installation
 
@@ -109,11 +109,11 @@ npm run approve-weth
 npm run deploy-ngrok
 ```
 
-🎉 Your automation is now active!
+Your automation is now active!
 
-## ⚙️ Customization Guide
+## Customization Guide
 
-### 🌐 Using Different Blockchains
+### Using Different Blockchains
 
 To use this system on different chains (e.g., Ethereum Mainnet, Polygon, Arbitrum):
 
@@ -158,7 +158,7 @@ export const WETH_ADDRESS = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'; // ETH
 // Optimism: 0x4200000000000000000000000000000000000006
 ```
 
-### 👤 Using Different Wallet Addresses
+### Using Different Wallet Addresses
 
 To monitor a different wallet address:
 
@@ -189,7 +189,7 @@ SAFE_WALLET_ADDRESS=0xNewSafeWalletAddress
 2. Approve WETH: `npm run approve-weth`
 3. Deploy automation: `npm run deploy-ngrok`
 
-### 🔧 Customizing Health Factor Threshold
+### Customizing Health Factor Threshold
 
 Edit `src/utils/config.ts`:
 
@@ -208,7 +208,7 @@ export const config = {
 };
 ```
 
-### 🌐 Using Your Own Health Monitoring API
+### Using Your Own Health Monitoring API
 
 If you have your own API for health monitoring:
 
@@ -258,10 +258,10 @@ Example API response:
 
 NOT JSON:
 ```json
-{"healthFactor": 1.45}  ❌ Won't work
+{"healthFactor": 1.45}  // Won't work
 ```
 
-### 🎨 Customizing Automation Logic
+### Customizing Automation Logic
 
 #### Change Top-Up Asset
 
@@ -313,7 +313,7 @@ safeTransactions: [
 ]
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 aave-triggerX/
@@ -338,7 +338,7 @@ aave-triggerX/
 └── README.md                     # This file
 ```
 
-## 🔍 How It Works
+## How It Works
 
 1. **Health Monitoring API**: Your local server exposes an endpoint that returns your current Aave health factor
 2. **ngrok Tunnel**: Exposes your local API to the internet so TriggerX can access it
@@ -349,7 +349,7 @@ aave-triggerX/
    - Supplies collateral to Aave on your behalf
 6. **Position Protected**: Your health factor increases, protecting from liquidation
 
-## 📝 Available Scripts
+## Available Scripts
 
 ```bash
 npm start           # Start health monitoring API
@@ -362,7 +362,7 @@ npm run dev         # Run in development mode with auto-reload
 npm run clean       # Remove build artifacts
 ```
 
-## 🛡️ Security Considerations
+## Security Considerations
 
 1. **Private Keys**: Never commit `.env` file or share your private keys
 2. **Safe Wallet**: Automation executes through Safe wallet, providing an additional security layer
@@ -370,7 +370,7 @@ npm run clean       # Remove build artifacts
 4. **API Exposure**: ngrok exposes your health API publicly - ensure no sensitive data is exposed
 5. **Fund Management**: Only fund Safe wallet with amount needed for automation
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Job Not Triggering
 
@@ -405,7 +405,7 @@ If TriggerX times out calling your API:
 - WETH not approved for Aave Pool
 - Health factor already above threshold
 
-## 🌟 Advanced Configuration
+## Advanced Configuration
 
 ### Recurring Jobs
 
@@ -449,7 +449,7 @@ conditionType: 'equal'             // Health factor == threshold
 conditionType: 'between'           // lowerLimit <= HF <= upperLimit
 ```
 
-## 📚 Additional Resources
+## Additional Resources
 
 - [Aave V3 Documentation](https://docs.aave.com/developers/getting-started/readme)
 - [TriggerX SDK Documentation](https://triggerx.gitbook.io/triggerx-docs)
@@ -461,5 +461,5 @@ This software is provided "as is" without warranty of any kind. Use at your own 
 
 ---
 
-**Built with ❤️ using TriggerX, Aave V3, and Safe Wallet**
+**Built using TriggerX, Aave V3, and Safe Wallet**
 

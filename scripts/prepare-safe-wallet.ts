@@ -30,71 +30,46 @@ const SAFE_ABI = [
 ];
 
 async function prepareSafeWallet() {
-  console.log('Verifying Pre-existing Safe Wallet for Aave Automation\n');
-  console.log('═'.repeat(60));
+  console.log('Verifying Safe Wallet\n');
   
   const provider = new ethers.JsonRpcProvider(config.rpcUrl);
-  
-  // Step 1: Validate Safe wallet address from env
-  console.log('\nStep 1: Validate Safe Wallet Address');
-  console.log('─'.repeat(60));
-  
   const safeAddress = config.safeWalletAddress;
   
   if (!safeAddress) {
-    console.error('[ERROR] SAFE_WALLET_ADDRESS not found in .env file!');
-    console.log('\nPlease add your Safe wallet address to .env:');
-    console.log('SAFE_WALLET_ADDRESS=0xYourSafeWalletAddressHere');
+    console.error('SAFE_WALLET_ADDRESS not found in .env file');
+    console.log('Add to .env: SAFE_WALLET_ADDRESS=0xYourAddress');
     process.exit(1);
   }
   
-  // Validate address format
   if (!ethers.isAddress(safeAddress)) {
-    console.error('[ERROR] Invalid Safe wallet address format:', safeAddress);
+    console.error('Invalid Safe wallet address:', safeAddress);
     process.exit(1);
   }
   
-  console.log('[SUCCESS] Safe wallet address:', safeAddress);
+  console.log('Safe wallet address:', safeAddress);
   
-  // Check if address has code (is a contract)
   try {
     const code = await provider.getCode(safeAddress);
     if (code === '0x') {
-      console.log('[WARNING] Address has no contract code. Are you sure this is a Safe wallet?');
-    } else {
-      console.log('[INFO] Address is a contract (likely a Safe wallet)');
+      console.log('Warning: Address has no contract code');
     }
   } catch (error: any) {
-    console.error('[WARNING] Could not verify contract code:', error.message);
+    console.error('Could not verify contract:', error.message);
   }
-  
-  // Step 2: Check Safe wallet owners
-  console.log('\nStep 2: Check Safe Wallet Owners');
-  console.log('─'.repeat(60));
   
   try {
     const safeContract = new ethers.Contract(safeAddress, SAFE_ABI, provider);
     const owners = await safeContract.getOwners();
     const threshold = await safeContract.getThreshold();
     
-    console.log(`Number of Owners: ${owners.length}`);
-    console.log(`Signature Threshold: ${threshold.toString()}`);
-    console.log('\nOwners:');
+    console.log(`\nOwners: ${owners.length}, Threshold: ${threshold.toString()}`);
     owners.forEach((owner: string, index: number) => {
-      console.log(`  ${index + 1}. ${owner}`);
-      if (owner.toLowerCase() === config.userAddress.toLowerCase()) {
-        console.log('     ^ This is your USER_ADDRESS');
-      }
+      const isYou = owner.toLowerCase() === config.userAddress.toLowerCase();
+      console.log(`  ${index + 1}. ${owner}${isYou ? ' (your address)' : ''}`);
     });
   } catch (error: any) {
-    console.log('[WARNING] Could not retrieve Safe owners:', error.message);
-    console.log('   This might not be a Safe wallet contract.');
-    console.log('   Continuing with verification...');
+    console.log('Could not retrieve Safe owners:', error.message);
   }
-  
-  // Step 3: Check WETH balance in Safe wallet
-  console.log('\nStep 3: Check WETH Balance in Safe Wallet');
-  console.log('─'.repeat(60));
   
   const wethContract = new ethers.Contract(WETH_ADDRESS, ERC20_ABI, provider);
   
@@ -102,30 +77,19 @@ async function prepareSafeWallet() {
     const wethBalance = await wethContract.balanceOf(safeAddress);
     const wethBalanceFormatted = ethers.formatEther(wethBalance);
     
-    console.log(`WETH Balance: ${wethBalanceFormatted} WETH`);
+    console.log(`\nWETH Balance: ${wethBalanceFormatted} WETH`);
     
     if (wethBalance === 0n) {
-      console.log('\n[WARNING] Safe wallet has no WETH!');
-      console.log('\nTo fund your Safe wallet with WETH:');
-      console.log('─'.repeat(60));
-      console.log('1. Go to https://app.aave.com/ or use a DEX');
-      console.log('2. Get WETH on OP Sepolia testnet');
-      console.log('3. Send WETH to your Safe wallet address:');
-      console.log(`   ${safeAddress}`);
-      console.log('4. Run this script again to verify');
-      console.log('\n[TIP] You can also wrap ETH to WETH using the WETH contract');
+      console.log('Warning: Safe wallet has no WETH');
+      console.log('Send WETH to:', safeAddress);
     } else {
       const estimatedTopups = Math.floor(Number(wethBalanceFormatted) / Number(ethers.formatEther(config.topUpAmount)));
-      console.log(`[INFO] Estimated top-ups available: ${estimatedTopups}`);
+      console.log(`Estimated top-ups available: ${estimatedTopups}`);
     }
   } catch (error: any) {
-    console.error('[ERROR] Failed to check WETH balance:', error.message);
+    console.error('Failed to check WETH balance:', error.message);
     process.exit(1);
   }
-  
-  // Step 4: Check ETH balance (for gas)
-  console.log('\nStep 4: Check ETH Balance (for gas fees)');
-  console.log('─'.repeat(60));
   
   try {
     const ethBalance = await provider.getBalance(safeAddress);
@@ -134,46 +98,24 @@ async function prepareSafeWallet() {
     console.log(`ETH Balance: ${ethBalanceFormatted} ETH`);
     
     if (ethBalance === 0n) {
-      console.log('[WARNING] Safe wallet has no ETH for gas fees!');
-      console.log('   Make sure to add some ETH for transaction gas costs.');
+      console.log('Warning: Safe wallet has no ETH for gas fees');
     }
   } catch (error: any) {
-    console.error('[ERROR] Failed to check ETH balance:', error.message);
+    console.error('Failed to check ETH balance:', error.message);
   }
   
-  // Step 5: Summary and next steps
-  console.log('\nSafe Wallet Verification Summary');
-  console.log('═'.repeat(60));
-  console.log('Safe Wallet Address:', safeAddress);
-  console.log('WETH Balance:', ethers.formatEther(await wethContract.balanceOf(safeAddress)), 'WETH');
-  console.log('ETH Balance:', ethers.formatEther(await provider.getBalance(safeAddress)), 'ETH');
-  console.log('Monitored User Address:', config.userAddress);
-  console.log('Aave Pool Address:', config.aave.poolAddress);
+  console.log('\nSummary:');
+  console.log('Safe:', safeAddress);
+  console.log('WETH:', ethers.formatEther(await wethContract.balanceOf(safeAddress)));
+  console.log('ETH:', ethers.formatEther(await provider.getBalance(safeAddress)));
+  console.log('User:', config.userAddress);
+  console.log('Threshold:', config.healthFactorThreshold);
   
-  console.log('\nNext Steps:');
-  console.log('─'.repeat(60));
-  console.log('1. Test your health factor: npm run test-health');
-  console.log('2. Start health monitor API: npm start');
-  console.log('3. Expose API publicly: ngrok http 3000');
-  console.log('4. Deploy the TriggerX job: npm run deploy-ngrok');
-  
-  console.log('\nThe job will automatically:');
-  console.log('─'.repeat(60));
-  console.log('• Monitor health factor of:', config.userAddress);
-  console.log(`• Trigger when health factor drops below ${config.healthFactorThreshold}`);
-  console.log(`• Supply ${ethers.formatEther(config.topUpAmount)} WETH per top-up`);
-  console.log('• Execute from Safe wallet:', safeAddress);
-  
-  console.log('\nImportant Notes:');
-  console.log('─'.repeat(60));
-  console.log('• The Safe wallet must have WETH for automated top-ups');
-  console.log('• The Safe wallet must have ETH for gas fees');
-  console.log('• TriggerX will handle WETH approvals automatically');
-  console.log('• Keep the health monitor API running for automation to work');
+  console.log('\nNext: npm start, then npm run deploy-ngrok');
 }
 
 prepareSafeWallet().catch((error) => {
-  console.error('\n[FATAL] Fatal error:', error);
+  console.error('Error:', error);
   process.exit(1);
 });
 
