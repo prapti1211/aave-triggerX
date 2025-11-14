@@ -27,7 +27,7 @@ This application:
 ### 1. Installation
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/trigg3rX/aave-triggerX.git
 cd aave-triggerX
 npm install
 ```
