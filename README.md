@@ -111,6 +111,42 @@ npm run deploy-ngrok
 
 Your automation is now active!
 
+## Project Structure
+
+```
+aave-triggerX/
+├── src/
+│   ├── contracts/
+│   │   └── abis.ts              # Smart contract ABIs and addresses
+│   ├── services/
+│   │   ├── aave.service.ts       # Aave interaction logic
+│   │   ├── health-monitor.service.ts  # Health monitoring API
+│   │   └── triggerx.service.ts   # TriggerX SDK integration
+│   ├── utils/
+│   │   └── config.ts             # Configuration management
+│   └── main.ts                   # Application entry point
+├── scripts/
+│   ├── create-safe-wallet.ts     # Create Safe wallet
+│   ├── prepare-safe-wallet.ts    # Check Safe wallet status
+│   ├── approve-weth-for-aave.ts  # Approve WETH spending
+│   └── deploy-ngrok-job.ts       # Deploy job with ngrok URL
+├── .env                          # Environment configuration
+├── package.json                  # Dependencies and scripts
+├── tsconfig.json                 # TypeScript configuration
+└── README.md                     # This file
+```
+
+## How It Works
+
+1. **Health Monitoring API**: Your local server exposes an endpoint that returns your current Aave health factor
+2. **ngrok Tunnel**: Exposes your local API to the internet so TriggerX can access it
+3. **TriggerX Job**: Polls your health factor API every ~90 seconds
+4. **Condition Check**: When health factor ≤ threshold, TriggerX triggers the job
+5. **Safe Wallet Execution**: The job executes via your Safe wallet, which:
+   - Approves WETH for Aave Pool
+   - Supplies collateral to Aave on your behalf
+6. **Position Protected**: Your health factor increases, protecting from liquidation
+
 ## Customization Guide
 
 ### Using Different Blockchains
@@ -309,42 +345,6 @@ safeTransactions: [
   { to: AAVE_POOL, data: enableCollateralData, operation: 0 },
 ]
 ```
-
-## Project Structure
-
-```
-aave-triggerX/
-├── src/
-│   ├── contracts/
-│   │   └── abis.ts              # Smart contract ABIs and addresses
-│   ├── services/
-│   │   ├── aave.service.ts       # Aave interaction logic
-│   │   ├── health-monitor.service.ts  # Health monitoring API
-│   │   └── triggerx.service.ts   # TriggerX SDK integration
-│   ├── utils/
-│   │   └── config.ts             # Configuration management
-│   └── main.ts                   # Application entry point
-├── scripts/
-│   ├── create-safe-wallet.ts     # Create Safe wallet
-│   ├── prepare-safe-wallet.ts    # Check Safe wallet status
-│   ├── approve-weth-for-aave.ts  # Approve WETH spending
-│   └── deploy-ngrok-job.ts       # Deploy job with ngrok URL
-├── .env                          # Environment configuration
-├── package.json                  # Dependencies and scripts
-├── tsconfig.json                 # TypeScript configuration
-└── README.md                     # This file
-```
-
-## How It Works
-
-1. **Health Monitoring API**: Your local server exposes an endpoint that returns your current Aave health factor
-2. **ngrok Tunnel**: Exposes your local API to the internet so TriggerX can access it
-3. **TriggerX Job**: Polls your health factor API every ~90 seconds
-4. **Condition Check**: When health factor ≤ threshold, TriggerX triggers the job
-5. **Safe Wallet Execution**: The job executes via your Safe wallet, which:
-   - Approves WETH for Aave Pool
-   - Supplies collateral to Aave on your behalf
-6. **Position Protected**: Your health factor increases, protecting from liquidation
 
 ## Available Scripts
 
